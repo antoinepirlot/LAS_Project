@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
 #include "utils_v1.h"
 
 void createResources();
@@ -28,12 +27,12 @@ int main(int argc, const char** argv) {
 			reserveResources(opt);
 			break;
 	}
-	return 0;
+	exit(0);
 }
 
 void createResources(){
 	int shmid = sshmget(SHM_KEY, SHM_SIZE*sizeof(int), IPC_CREAT | IPC_EXCL | 0644);
-	printf("Voici l'adresse de la mémoire partagée : %d\n", shmid);
+	printf("Voici l'identifiant de la mémoire partagée : %d\n", shmid);
 }
 
 void deleteResources(){
@@ -43,5 +42,7 @@ void deleteResources(){
 }
 
 void reserveResources(int opt){
+	//	sem_create()
+	//sem_up and sem_down dispo in utils.h
 	printf("%d", opt);
 }
