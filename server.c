@@ -11,9 +11,9 @@
 int initSocket(int port);
 
 int main(int argc, char **argv) {
-    //char port = atoi(argv[])
-    //printf("Le serveur tourne sur le port: %d\n", *argv[1]);
-    int sockfd = initSocket(*argv[1]);
+    int port = atoi(argv[1]);
+    int sockfd = initSocket(port);
+    printf("Le serveur tourne sur le port: %d\n", port);
     sclose(sockfd);
     exit(0);
 }
