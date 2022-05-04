@@ -2,7 +2,8 @@
 #define LAS_PROJECT_VIREMENT_H
 
 typedef struct Virement {
-    int num;
+    int compteEnvoyeur;
+    int compteReceveur;
     int somme;
 }Virement;
 
