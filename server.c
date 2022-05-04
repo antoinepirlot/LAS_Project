@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "utils_v1.h"
 
-int main(){
+int main() {
 	printf("Hello world!");
 	return 0;
+}
