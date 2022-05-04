@@ -303,6 +303,30 @@ pid_t fork_and_run3(void (*run)(void *, void *, void *), void* arg0, void *arg1,
   return childId;
 }
 
+pid_t fork_and_run4(void (*run)(void *, void *, void *, void *), void* arg0, void *arg1, void *arg2, void *arg3) {
+    int childId = fork();
+    checkNeg(childId, "Fork failed");
+
+    if (childId == 0) {
+        (*run)(arg0, arg1, arg2, arg3);
+        exit(EXIT_SUCCESS);
+    }
+
+    return childId;
+}
+
+pid_t fork_and_run5(void (*run)(void*, void*, void*, void*, void*), void *arg0, void *arg1, void* arg2, void *arg3, void *arg4) {
+    int childId = fork();
+    checkNeg(childId, "Fork failed");
+
+    if (childId == 0) {
+        (*run)(arg0, arg1, arg2, arg3, arg4);
+        exit(EXIT_SUCCESS);
+    }
+
+    return childId;
+}
+
 pid_t swaitpid(pid_t pid, int *wstatus, int option) {
   pid_t waitId = waitpid(pid, wstatus, option);
   checkNeg(waitId, "Error WAITPID");

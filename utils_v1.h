@@ -168,6 +168,22 @@ pid_t fork_and_run2(void (*run)(void *, void *), void* arg0, void* arg1);
 //RES:  The pid of the chid process
 pid_t fork_and_run3(void (*run)(void*, void*, void*), void *arg0, void *arg1, void* arg2);
 
+//POST: A new child process is created by means of the "fork" function.
+//      Firstly, it executes the <run> function with <arg0>, <arg1>, <arg2> and <arg3>
+//      as parameters then it exits.
+//      The calling process and the child process runs concurrently.
+//      If an error occurs, the calling process is abruptly terminated.
+//RES:  The pid of the chid process
+pid_t fork_and_run4(void (*run)(void*, void*, void*, void*), void *arg0, void *arg1, void* arg2, void *arg3);
+
+//POST: A new child process is created by means of the "fork" function.
+//      Firstly, it executes the <run> function with <arg0>, <arg1>, <arg2>, <arg3> and <arg4>
+//      as parameters then it exits.
+//      The calling process and the child process runs concurrently.
+//      If an error occurs, the calling process is abruptly terminated.
+//RES:  The pid of the chid process
+pid_t fork_and_run5(void (*run)(void*, void*, void*, void*, void*), void *arg0, void *arg1, void* arg2, void *arg3, void *arg4);
+
 //NOTE: This is a safe version of the "waitpid" system call
 pid_t swaitpid(pid_t pid, int *wstatus, int options);
 
