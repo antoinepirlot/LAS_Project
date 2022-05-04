@@ -56,9 +56,9 @@ enum {BLACK_TEXT = 30,
 #define colorOn(mode,textColor) printf("\033[%d;%dm",mode,textColor)   // mode: 0 normal ; 1 bold
 #define colorOff() printf("\033[0m");  // text color reset
 
-void printOk (char* s);
-void printError (char* s);
-void printColor (char* format, char* s, int color);
+void printOk (char* s);   // GREEN_TEXT
+void printError (char* s);   // RED_TEXT
+void printColor (char* s, int color);
 
 //******************************************************
 // DATE AND TIME
