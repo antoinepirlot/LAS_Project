@@ -16,6 +16,8 @@
 #include <sys/ipc.h>
 #include <poll.h>
 
+#define SHM_KEY 159
+#define SHM_SIZE 100
 
 //******************************************************
 // LECTURE CLAVIER
