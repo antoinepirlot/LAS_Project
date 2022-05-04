@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {	
 	if(argc != 3) {
-		printf("Respectez la synthaxe de la fonction : pdr [compte] [montant]");
+		printf("Respectez la synthaxe de la fonction : pdr [compte] [montant]\n");
 		exit(0);
 	}
 	
