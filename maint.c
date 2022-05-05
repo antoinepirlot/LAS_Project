@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
+#include <unistd.h>
 #include "utils_v1.h"
 
 void createResources();
@@ -42,7 +43,8 @@ void deleteResources(){
 }
 
 void reserveResources(int opt){
-	//	sem_create()
-	//sem_up and sem_down dispo in utils.h
-	printf("%d", opt);
+	int semid = sem_create(SEM_KEY, SHM_SIZE* sizeof(int), 0644, 0);
+	sem_down0(semid);
+	sleep(opt);
+	sem_up0(semid);
 }
