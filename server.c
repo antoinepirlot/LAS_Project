@@ -14,13 +14,26 @@ volatile sig_atomic_t end = false;
 
 int initSocket(int port);
 
+void endServer();
+
 int main(int argc, char **argv) {
-    int nbVirements = 0, nbSockFd = 0;
+    sigset_t set;
+    ssigemptyset(&set);
+    ssigaddset(&set, SIGINT);
+    ssigprocmask(SIG_BLOCK, &set, NULL);
+    ssigaction(SIGINT, endServer);
+
+    int nbVirements = 0, nbSockFd = 0, shmId;
     int port = atoi(argv[1]);
     int sockFd = initSocket(port);
+
     Virement tabVirements[MAX_VIREMENTS], virement;
+
     struct pollfd fds[1024];
+
     bool fds_invalid[1024];
+
+    shmId = sshmget(SHM_KEY, SHM_SIZE, 0);
     printf("Le serveur tourne sur le port: %d\n", port);
 
     fds[nbSockFd].fd = sockFd;
@@ -28,6 +41,7 @@ int main(int argc, char **argv) {
     fds_invalid[nbSockFd] = false;
     nbSockFd++;
 
+    ssigprocmask(SIG_UNBLOCK, &set, NULL);
     while (!end) {
         spoll(fds, nbSockFd, 0);
         if (fds[0].revents & POLLIN & !fds_invalid[0]) {
@@ -39,16 +53,18 @@ int main(int argc, char **argv) {
         }
         for (int i = 1; i < nbSockFd; i++) {
             if (fds[i].revents & POLLIN && !fds_invalid[i]) {
+                void *addr = sshmat(shmId);
                 sread(fds[i].fd, &virement, sizeof(virement));
                 nwrite(fds[i].fd, &virement, sizeof(virement));
                 printf("Virement pour : %d€\n", virement.somme);
                 nbVirements++;
+                sshmdt(addr);
             }
-            //sleep(2);
             sclose(fds[i].fd);
             fds_invalid[i] = true;
         }
     }
+    printf("Fin du serveur.\n");
     exit(0);
 }
 
@@ -57,4 +73,8 @@ int initSocket(int port) {
     sbind(port, sockfd);
     slisten(sockfd, BACKLOG);
     return sockfd;
+}
+
+void endServer() {
+    end = true;
 }
