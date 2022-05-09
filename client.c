@@ -50,7 +50,7 @@ int initSocketClient(char * adr, int port) {
 int main(int argc, char *argv[])
 {
     if(argc != 5) {
-        printf("Respectez la synthaxe de la fonction : client [adr] [port] [num] [delay]\n");
+        printf("Respectez la synthaxe de la fonction : client adr port num delay\n");
         exit(0);
     }
 
@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
                 strTok = strtok ( NULL, " ");
             }
             struct Virement virement = {num, *tabArguments[1], *tabArguments[2]};
+            printf("Contenu virement: %d, %d, %d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
 
             //Envoyez le virement au serveur
             swrite(sockfd, &virement, sizeof(virement));
