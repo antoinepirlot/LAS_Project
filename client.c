@@ -76,7 +76,6 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
         sread(pipefd[0], &virement, sizeof(int));
         if(virement.compteReceveur == ENVOIE_OK && tabVirement != NULL) {
             swrite(sockfd, &tabVirement, sizeof(tabVirement));
-            nbrVirement = 0;
         }
         else {
             tabVirement[nbrVirement] = virement;
@@ -143,6 +142,10 @@ int main(int argc, char *argv[])
 
             Virement virement = initVirement(commande, num);
             printf("Contenu virement: %d, %d, %d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
+
+            swrite(pipefd[0], &virement, sizeof(virement));
+
+            printf("Envoyé dans les virements récurents\n");
         }
         else {
             printf("Erreur dans la commande\n");
