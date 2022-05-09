@@ -17,6 +17,10 @@ int initSocket(int port);
 void endServer();
 
 int main(int argc, char **argv) {
+    if (argc != 2) {
+        printf("Server prend un argument qui correspond au port.\n"
+               "Par exemple: ./server 8080\n");
+    }
     sigset_t set;
     ssigemptyset(&set);
     ssigaddset(&set, SIGINT);
