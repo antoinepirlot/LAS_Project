@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
                 i++;
                 strTok = strtok ( NULL, " ");
             }
-            struct Virement virement = {num, tabArguments[1], tabArguments[2]};
+            struct Virement virement = {num, *tabArguments[1], *tabArguments[2]};
 
             //Envoyez le virement au serveur
             swrite(sockfd, &virement, sizeof(virement));
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
                 i++;
                 strTok = strtok ( NULL, " ");
             }
-            struct Virement virement = {num, tabArguments[1], tabArguments[2]};
+            struct Virement virement = {num, *tabArguments[1], *tabArguments[2]};
         }
         else {
             printf("Erreur dans la commande\n");
