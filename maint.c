@@ -11,10 +11,10 @@ void deleteResources();
 void reserveResources(int opt);
 
 int main(int argc, const char** argv) {
-    if (argc < 2 || argc > 3) {
-        printf("Respectez la synthaxe de la fonction : maint type [opt]\n");
-        exit(0);
-    }
+	if (argc < 2 || argc > 3) {
+		printf("Respectez la synthaxe de la fonction : maint type [opt]\n");
+		exit(0);
+	}
 	printf("Hello world! Ici le programme de maintenance. \n");
 	int type = atoi(argv[1]);
 	int opt;

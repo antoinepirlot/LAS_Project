@@ -1,4 +1,4 @@
-CCFLAGS=-D_DEFAULT_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -std=c11 -pedantic -Wvla -Wall -Werror
+CCFLAGS=-D_DEFAULT_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -std=c11 -pedantic -Wvla -Wall -Werror -g
 execs=pdr server client maint
 
 all:$(execs)
@@ -29,10 +29,10 @@ utils_v1.o: utils_v1.c utils_v1.h
 	gcc $(CFLAGS) -c utils_v1.c
 
 maint: maint.o
-	cc $(CCFLAGS) -o maint maint.o utils_v1.o
+	gcc $(CCFLAGS) -o maint maint.o utils_v1.o
 
 maint.o: maint.c utils_v1.o
-	cc $(CCFLAGS) -c maint.c
+	gcc $(CCFLAGS) -c maint.c
 
 clean:
 	rm *.o
