@@ -38,7 +38,7 @@ int main(int argc, const char** argv) {
 
 void createResources(){
 	int shmid = sshmget(SHM_KEY, SHM_SIZE*sizeof(int), IPC_CREAT | IPC_EXCL | PERM);
-	int semid = sem_create(SEM_KEY, 1, PERM, 0);
+	int semid = sem_create(SEM_KEY, 1, PERM, 1);
 	printf("Voici l'identifiant de la mémoire partagée : %d\n", shmid);
 	printf("Voici l'identifiant du sémaphore : %d\n", semid );
 }
@@ -53,8 +53,10 @@ void deleteResources(){
 }
 
 void reserveResources(int opt){
-	int semid = sem_create(SEM_KEY, SHM_SIZE* sizeof(int), 0644, 0);
+	int semid = sem_get(SEM_KEY,1);
 	sem_down0(semid);
 	sleep(opt);
+	printf("Je me réveil");
 	sem_up0(semid);
+	exit(1);
 }

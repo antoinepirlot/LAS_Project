@@ -28,51 +28,26 @@ int main(int argc, char **argv) {
     ssigprocmask(SIG_BLOCK, &set, NULL);
     ssigaction(SIGINT, endServer);
 
-    int nbVirements = 0, nbSockFd = 0, shmId;
+    int semId, shmId;
     int port = atoi(argv[1]);
     int sockFd = initSocket(port);
 
-    Virement tabVirements[MAX_VIREMENTS], *virement;
+    Virement virement;
 
-    struct pollfd fds[1024];
-
-    bool fds_invalid[1024];
-
-    shmId = sshmget(SHM_KEY, SHM_SIZE, 0);
-    printf("Le serveur tourne sur le port: %d\n", port);
-
-    fds[nbSockFd].fd = sockFd;
-    fds[nbSockFd].events = POLLIN;
-    fds_invalid[nbSockFd] = false;
-    nbSockFd++;
+    shmId = sshmget(SHM_KEY, SHM_SIZE * sizeof(int), 0);
+    int *addr = sshmat(shmId);
+    semId = sem_get(SEM_KEY, 1);
 
     ssigprocmask(SIG_UNBLOCK, &set, NULL);
     while (!end) {
-        spoll(fds, nbSockFd, 0);
-        if (fds[0].revents && POLLIN && !fds_invalid[0]) {
-            int newSockFd = saccept(sockFd);
-            fds[nbSockFd].fd = newSockFd;
-            fds[nbSockFd].events = POLLIN;
-            nbSockFd++;
-            fds_invalid[nbSockFd] = false;
-        }
-        for (int i = 1; i < nbSockFd; i++) {
-            if (fds[i].revents && POLLIN && !fds_invalid[i]) {
-                sread(fds[i].fd, &virement, sizeof(virement));
-                if (virement != NULL) {
-                    sem_down0(shmId);
-                    void *addr = sshmat(shmId);
-                    nwrite(fds[i].fd, &virement, sizeof(virement));
-                    printf("Virement pour : %d€\n", virement->somme);
-                    nbVirements++;
-                    sshmdt(addr);
-                    sem_up0(shmId);
-                }
-                sclose(fds[i].fd);
-                fds_invalid[i] = true;
-            }
-        }
+        int newSockFd = saccept(sockFd);
+        sread(newSockFd, &virement, sizeof(virement));
+        sem_down0(semId);
+        nwrite(newSockFd, &virement, sizeof(virement));
+        printf("Virement pour : %d€\n", virement.somme);
+        sem_up0(semId);
     }
+    sshmdt(addr);
     printf("Fin du serveur.\n");
     exit(0);
 }
@@ -81,6 +56,7 @@ int initSocket(int port) {
     int sockfd = ssocket();
     sbind(port, sockfd);
     slisten(sockfd, BACKLOG);
+    printf("Le serveur tourne sur le port: %d\n", port);
     return sockfd;
 }
 
