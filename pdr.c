@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
 int pdr(int numCompte, int montant){
 	printf("debut pdr\n");
-	int sem_id = sem_create(SEM_KEY, 1, PERM, 0);
+	int sem_id = sem_get(SEM_KEY, 1);
 	int shmid = sshmget(SHM_KEY, SHM_SIZE* sizeof(int), 0);
 	int* accounts = sshmat(shmid);
 	printf("avant semdown\n");
