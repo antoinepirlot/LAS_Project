@@ -36,17 +36,16 @@ int main(int argc, char **argv) {
 
     shmId = sshmget(SHM_KEY, SHM_SIZE * sizeof(int), 0);
     int *addr = sshmat(shmId);
-    int sid = sem_get(SEM_KEY, 1);
+    semId = sem_get(SEM_KEY, 1);
 
     ssigprocmask(SIG_UNBLOCK, &set, NULL);
     while (!end) {
         int newSockFd = saccept(sockFd);
         sread(newSockFd, &virement, sizeof(virement));
-        //sem_down0(semId);
-        printf("Hello\n");
+        sem_down0(semId);
         nwrite(newSockFd, &virement, sizeof(virement));
         printf("Virement pour : %d€\n", virement.somme);
-        //sem_up0(semId);
+        sem_up0(semId);
     }
     sshmdt(addr);
     printf("Fin du serveur.\n");
