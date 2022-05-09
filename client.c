@@ -11,6 +11,24 @@
 
 #define TAILLE_MAX_COMMANDE 15
 
+//Récupérer les arguments de la commande et crée le virement
+Virement initVirement(char* commande, int num) {
+
+    char** tabArguments = (char**)malloc(3*sizeof(char*));
+    int i = 0;
+    char* strTok = strtok(commande, " ");
+    while ( strTok != NULL  && i < 3) {
+        tabArguments[i] = (char*)malloc((strlen(strTok)+1)*sizeof(char));
+        tabArguments[i] = strTok;
+        i++;
+        strTok = strtok ( NULL, " ");
+    }
+
+    struct Virement virement = { num,atoi(tabArguments[1]),  atoi(tabArguments[2])};
+    return virement;
+}
+
+
 //Fils minuteur
 void minuteur (void *pipe, void *delay) {
 
@@ -87,18 +105,8 @@ int main(int argc, char *argv[])
         }
         else if(commande[0] == '+') {
 
-            //Récupérer les arguments de la commande (FONCTION ?)
-            char** tabArguments = (char**)malloc(3*sizeof(char*));
-            int i = 0;
-            char* strTok = strtok(commande, " ");
-            while ( strTok != NULL  && i < 3) {
-                tabArguments[i] = (char*)malloc((strlen(strTok)+1)*sizeof(char));
-                tabArguments[i] = strTok;
-                i++;
-                strTok = strtok ( NULL, " ");
-            }
-            struct Virement virement = {num, *tabArguments[1], *tabArguments[2]};
-            printf("Contenu virement: %d, %d, %d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
+            Virement virement = initVirement(commande, num);
+            printf("Contenu virement: Somme=%d, Envoyeur=%d, Receveur=%d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
 
             //Envoyez le virement au serveur
             swrite(sockfd, &virement, sizeof(virement));
@@ -110,17 +118,8 @@ int main(int argc, char *argv[])
         }
         else if(commande[0] == '*') {
 
-            //Récupérer les arguments de la commande (FONCTION ?)
-            char** tabArguments = (char**)malloc(3*sizeof(char*));
-            int i = 0;
-            char* strTok = strtok(commande, " ");
-            while ( strTok != NULL  && i < 3) {
-                tabArguments[i] = (char*)malloc((strlen(strTok)+1)*sizeof(char));
-                tabArguments[i] = strTok;
-                i++;
-                strTok = strtok ( NULL, " ");
-            }
-            struct Virement virement = {num, *tabArguments[1], *tabArguments[2]};
+            Virement virement = initVirement(commande, num);
+            printf("Contenu virement: %d, %d, %d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
         }
         else {
             printf("Erreur dans la commande\n");
