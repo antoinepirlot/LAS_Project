@@ -10,6 +10,8 @@
 #include "virement.h"
 
 #define TAILLE_MAX_COMMANDE 15
+#define ENVOIE_OK -1
+#define MAX_NBR_VIREMENT 100
 
 //Récupérer les arguments de la commande et crée le virement
 Virement initVirement(char* commande, int num) {
@@ -28,16 +30,31 @@ Virement initVirement(char* commande, int num) {
     return virement;
 }
 
+//Crée le socket
+int initSocketClient(char * adr, int port) {
+    int sockfd = ssocket();
+
+    sconnect(adr, port, sockfd);
+
+    return sockfd;
+}
+
 
 //Fils minuteur
 void minuteur (void *pipe, void *delay) {
 
     int *pipefd = pipe;
+    int *delayMinuteur = delay;
+
     //Close du descripteur en écriture
     sclose(pipefd[1]);
 
+    struct Virement virement = { ENVOIE_OK, ENVOIE_OK, ENVOIE_OK};
 
-
+    while(1) {
+        sleep(*delayMinuteur);
+        swrite(pipefd[1], &virement, sizeof(int));
+    }
 
     //Close du descripteur en lecture
     sclose(pipefd[0]);
@@ -47,22 +64,28 @@ void minuteur (void *pipe, void *delay) {
 void virement_recurent (void *pipe, void *adr, void *port, void *num) {
 
     int *pipefd = pipe;
+    int *portServeur = port;
+    int sockfd = initSocketClient(adr, *portServeur);
     //Close du descripteur en écriture
     sclose(pipefd[1]);
 
-
+    Virement virement;
+    Virement * tabVirement = (Virement*)malloc(MAX_NBR_VIREMENT*sizeof(virement));
+    int nbrVirement = 0;
+    while(1) {
+        sread(pipefd[0], &virement, sizeof(int));
+        if(virement.compteReceveur == ENVOIE_OK && tabVirement != NULL) {
+            swrite(sockfd, &tabVirement, sizeof(tabVirement));
+            nbrVirement = 0;
+        }
+        else {
+            tabVirement[nbrVirement] = virement;
+            nbrVirement++;
+        }
+    }
 
     //Close du descripteur en lecture
     sclose(pipefd[0]);
-}
-
-//Crée le socket
-int initSocketClient(char * adr, int port) {
-    int sockfd = ssocket();
-
-    sconnect(adr, port, sockfd);
-
-    return sockfd;
 }
 
 int main(int argc, char *argv[])
