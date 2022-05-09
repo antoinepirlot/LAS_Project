@@ -37,14 +37,19 @@ int main(int argc, const char** argv) {
 }
 
 void createResources(){
-	int shmid = sshmget(SHM_KEY, SHM_SIZE*sizeof(int), IPC_CREAT | IPC_EXCL | 0644);
+	int shmid = sshmget(SHM_KEY, SHM_SIZE*sizeof(int), IPC_CREAT | IPC_EXCL | PERM);
+	int semid = sem_create(SEM_KEY, 1, PERM, 0);
 	printf("Voici l'identifiant de la mémoire partagée : %d\n", shmid);
+	printf("Voici l'identifiant du sémaphore : %d\n", semid );
 }
 
 void deleteResources(){
 	int shmid = sshmget(SHM_KEY, SHM_SIZE*sizeof(int), 0);
 	sshmdelete(shmid);
 	printf("La mémoire partagée a été détruite !\n");
+	int semid = sem_get(SEM_KEY, 1);
+	sem_delete(semid);
+	printf("Le sémaphore a été détruit !\n");
 }
 
 void reserveResources(int opt){
