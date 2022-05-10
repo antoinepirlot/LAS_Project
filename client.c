@@ -46,8 +46,8 @@ void minuteur (void *pipe, void *delay) {
     int *pipefd = pipe;
     int *delayMinuteur = delay;
 
-    //Close du descripteur en écriture
-    sclose(pipefd[1]);
+    //Close du descripteur en lecture
+    sclose(pipefd[0]);
 
     struct Virement virement = { ENVOIE_OK, ENVOIE_OK, ENVOIE_OK};
 
@@ -57,7 +57,7 @@ void minuteur (void *pipe, void *delay) {
     }
 
     //Close du descripteur en lecture
-    sclose(pipefd[0]);
+    sclose(pipefd[1]);
 }
 
 //Fils virement recurent
