@@ -39,20 +39,19 @@ int main(int argc, char **argv) {
 
     ssigprocmask(SIG_UNBLOCK, &set, NULL);
     while (!end) {
-        printf("Hey\n");
         int newSockFd = saccept(sockFd);
-        printf("Hey\n");
+        printf("Connexion acceptée\n");
         sread(newSockFd, &virement, sizeof(virement));
-        printf("Hey\n");
+        printf("Virement reçu\n");
         sem_down0(semId);
         int *accounts = sshmat(shmId);
         accounts[virement.compteEnvoyeur] = accounts[virement.compteEnvoyeur] - virement.somme;
         accounts[virement.compteReceveur] = accounts[virement.compteReceveur] + virement.somme;
         int solde = accounts[virement.compteEnvoyeur];
         sshmdt(accounts);
-        sem_up0(semId); //TODO PROBLEME SOLDE
+        sem_up0(semId);
         nwrite(newSockFd, &solde , sizeof(int));
-        printf("Virement pour : %d€\n", virement.somme);
+        printf("Réponse envoyée au client\n");
     }
     printf("Fin du serveur.\n");
     exit(0);
