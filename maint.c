@@ -56,7 +56,7 @@ void reserveResources(int opt){
 	int semid = sem_get(SEM_KEY,1);
 	sem_down0(semid);
 	sleep(opt);
-	printf("Je me réveil");
+	printf("Je me réveil\n");
 	sem_up0(semid);
 	exit(1);
 }

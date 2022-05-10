@@ -22,16 +22,13 @@ int main(int argc, char *argv[])
 }
 
 int pdr(int numCompte, int montant){
-	printf("debut pdr\n");
 	int sem_id = sem_get(SEM_KEY, 1);
 	int shmid = sshmget(SHM_KEY, SHM_SIZE* sizeof(int), 0);
 	int* accounts = sshmat(shmid);
-	printf("avant semdown\n");
 	sem_down0(sem_id);
-	printf("après semdown\n");
 	accounts[numCompte] += montant;
 	int solde = accounts[numCompte];
-	printf("solde = %d\n", solde);
 	sem_up0(sem_id);
+	sshmdt(accounts);
 	return solde;
 }
