@@ -11,8 +11,8 @@ void deleteResources();
 void reserveResources(int opt);
 
 int main(int argc, const char** argv) {
-	if (argc < 2 || argc > 3) {
-		printf("Respectez la synthaxe de la fonction : maint type [opt]\n");
+	if (argc < 2) {
+		printf("Respectez la synthaxe de la fonction : maint type\n");
 		exit(0);
 	}
 	printf("Hello world! Ici le programme de maintenance. \n");
@@ -20,6 +20,9 @@ int main(int argc, const char** argv) {
 	int opt;
 	if(argc==3){
 		opt = atoi(argv[2]);
+	}else if(argc<3 && type==3){
+		perror("Veuillez entrer une durée de maintenance et relancer le programme\n");
+		exit(-1);
 	}
 	printf("test break\n");
 	switch (type) {
