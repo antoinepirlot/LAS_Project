@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ipc.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -51,7 +53,7 @@ void minuteur (void *pipe, void *delay) {
 
     while(1) {
         sleep(*delayMinuteur);
-        swrite(pipefd[1], &virement, sizeof(int));
+        swrite(pipefd[1], &virement, sizeof(virement));
     }
 
     //Close du descripteur en lecture
@@ -68,14 +70,17 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
     sclose(pipefd[1]);
 
     Virement virement;
-    Virement * tabVirement = (Virement*)malloc(MAX_NBR_VIREMENT*sizeof(virement));
+    Virement tabVirement[MAX_NBR_VIREMENT];
+
     int nbrVirement = 0;
 
     while(1) {
+        sread(pipefd[0], &virement, sizeof(virement));
+        printf("Batement Récurent (Virement.compteReceveur = %d)\n", virement.compteReceveur);
+        if(virement.compteReceveur == ENVOIE_OK && nbrVirement > 0) {
 
-        sread(pipefd[0], &virement, sizeof(int));
-        if(virement.compteReceveur == ENVOIE_OK && tabVirement != NULL) {
-            printf("Envoie recurent\n");
+            //ENVOYER -1
+
             int sockfd = initSocketClient(adr, *portServeur);
             swrite(sockfd, &tabVirement, sizeof(tabVirement));
             sclose(sockfd);
