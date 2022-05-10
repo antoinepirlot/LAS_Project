@@ -35,22 +35,25 @@ int main(int argc, char **argv) {
     Virement virement;
 
     shmId = sshmget(SHM_KEY, SHM_SIZE * sizeof(int), 0);
-    int *accounts = sshmat(shmId);
     semId = sem_get(SEM_KEY, 1);
 
     ssigprocmask(SIG_UNBLOCK, &set, NULL);
     while (!end) {
+        printf("Hey\n");
         int newSockFd = saccept(sockFd);
+        printf("Hey\n");
         sread(newSockFd, &virement, sizeof(virement));
+        printf("Hey\n");
         sem_down0(semId);
+        int *accounts = sshmat(shmId);
         accounts[virement.compteEnvoyeur] = accounts[virement.compteEnvoyeur] - virement.somme;
         accounts[virement.compteReceveur] = accounts[virement.compteReceveur] + virement.somme;
         int solde = accounts[virement.compteEnvoyeur];
+        sshmdt(accounts);
         sem_up0(semId); //TODO PROBLEME SOLDE
-        nwrite(newSockFd, &solde , sizeof(virement));
+        nwrite(newSockFd, &solde , sizeof(int));
         printf("Virement pour : %d€\n", virement.somme);
     }
-    sshmdt(accounts);
     printf("Fin du serveur.\n");
     exit(0);
 }
