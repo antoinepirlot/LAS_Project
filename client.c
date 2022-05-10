@@ -110,14 +110,15 @@ int main(int argc, char *argv[])
 
     //Cloture descripteur pour lecture
     sclose(pipefd[0]);
-    //Création du socket
-    int sockfd = initSocketClient(adr, port);
 
     //Prompt
     printf("Bienvenue dans le service de virement !\n");
     bool fin = false;
 
     while(!fin) {
+        //Création du socket
+        int sockfd = initSocketClient(adr, port);
+
         char commande[TAILLE_MAX_COMMANDE];
         printf("Veuillez entrer une commande\n");
         sread(0, commande, TAILLE_MAX_COMMANDE);
@@ -150,12 +151,13 @@ int main(int argc, char *argv[])
         else {
             printf("Erreur dans la commande\n");
         }
+
+        //Fermeture de la connexion
+        sclose(sockfd);
     }
 
     //Close du descripteur en lecture
     sclose(pipefd[1]);
-    //Fermeture de la connexion
-    sclose(sockfd);
 
     return 0;
 }
