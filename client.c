@@ -65,17 +65,22 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
 
     int *pipefd = pipe;
     int *portServeur = port;
-    int sockfd = initSocketClient(adr, *portServeur);
+
     //Close du descripteur en écriture
     sclose(pipefd[1]);
 
     Virement virement;
     Virement * tabVirement = (Virement*)malloc(MAX_NBR_VIREMENT*sizeof(virement));
     int nbrVirement = 0;
+
     while(1) {
+
         sread(pipefd[0], &virement, sizeof(int));
         if(virement.compteReceveur == ENVOIE_OK && tabVirement != NULL) {
+            printf("Envoie recurent\n");
+            int sockfd = initSocketClient(adr, *portServeur);
             swrite(sockfd, &tabVirement, sizeof(tabVirement));
+            sclose(sockfd);
         }
         else {
             tabVirement[nbrVirement] = virement;
@@ -105,8 +110,8 @@ int main(int argc, char *argv[])
     spipe(pipefd);
 
     //Création des fils
-    //int minuteur_pid = fork_and_run2(minuteur, pipefd, &delay);
-    //int virement_recurent_pid = fork_and_run4(virement_recurent, pipefd, adr, &port, &num);
+    int minuteur_pid = fork_and_run2(minuteur, pipefd, &delay);
+    int virement_recurent_pid = fork_and_run4(virement_recurent, pipefd, adr, &port, &num);
 
     //Cloture descripteur pour lecture
     sclose(pipefd[0]);
@@ -149,7 +154,7 @@ int main(int argc, char *argv[])
             Virement virement = initVirement(commande, num);
             printf("Contenu virement: %d, %d, %d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
 
-            swrite(pipefd[0], &virement, sizeof(virement));
+            swrite(pipefd[1], &virement, sizeof(virement));
 
             printf("Envoyé dans les virements récurents\n");
         }
