@@ -125,11 +125,11 @@ int main(int argc, char *argv[])
             fin = true;
         }
         else if(commande[0] == '+') {
-            //Création du socket
-            int sockfd = initSocketClient(adr, port);
-
             Virement virement = initVirement(commande, num);
             printf("Contenu virement: Somme=%d, Envoyeur=%d, Receveur=%d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
+
+            //Création du socket
+            int sockfd = initSocketClient(adr, port);
 
             //Envoyez le virement au serveur
             nwrite(sockfd, &virement, sizeof(virement));
@@ -138,10 +138,11 @@ int main(int argc, char *argv[])
             int solde;
             printf("Attente reponse serveur\n");
             sread(sockfd, &solde, sizeof(solde));
-            printf("Votre solde actuel : %d\n", solde);
 
             //Fermeture de la connexion
             sclose(sockfd);
+
+            printf("Votre solde actuel : %d\n", solde);
         }
         else if(commande[0] == '*') {
 
