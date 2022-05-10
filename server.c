@@ -41,8 +41,11 @@ int main(int argc, char **argv) {
     while (!end) {
         int newSockFd = saccept(sockFd);
         printf("Connexion acceptée\n");
-        sread(newSockFd, &virement, sizeof(virement));
-        printf("Virement reçu\n");
+        int nbread = sread(newSockFd, &virement, sizeof(virement));
+        if (nbread == 0) {
+            printf("Nbread == 0\n");
+        }
+        printf("Virement reçu: %d, %d, %d\n", virement.compteEnvoyeur, virement.compteReceveur, virement.somme);
         sem_down0(semId);
         int *accounts = sshmat(shmId);
         accounts[virement.compteEnvoyeur] = accounts[virement.compteEnvoyeur] - virement.somme;
@@ -52,7 +55,9 @@ int main(int argc, char **argv) {
         sem_up0(semId);
         nwrite(newSockFd, &solde , sizeof(int));
         printf("Réponse envoyée au client\n");
+        sclose(newSockFd);
     }
+    sclose(sockFd);
     printf("Fin du serveur.\n");
     exit(0);
 }

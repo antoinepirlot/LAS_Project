@@ -105,8 +105,8 @@ int main(int argc, char *argv[])
     spipe(pipefd);
 
     //Création des fils
-    int minuteur_pid = fork_and_run2(minuteur, pipefd, &delay);
-    int virement_recurent_pid = fork_and_run4(virement_recurent, pipefd, adr, &port, &num);
+    //int minuteur_pid = fork_and_run2(minuteur, pipefd, &delay);
+    //int virement_recurent_pid = fork_and_run4(virement_recurent, pipefd, adr, &port, &num);
 
     //Cloture descripteur pour lecture
     sclose(pipefd[0]);
@@ -116,8 +116,6 @@ int main(int argc, char *argv[])
     bool fin = false;
 
     while(!fin) {
-        //Création du socket
-        int sockfd = initSocketClient(adr, port);
 
         char commande[TAILLE_MAX_COMMANDE];
         printf("Veuillez entrer une commande\n");
@@ -127,17 +125,23 @@ int main(int argc, char *argv[])
             fin = true;
         }
         else if(commande[0] == '+') {
+            //Création du socket
+            int sockfd = initSocketClient(adr, port);
 
             Virement virement = initVirement(commande, num);
             printf("Contenu virement: Somme=%d, Envoyeur=%d, Receveur=%d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
 
             //Envoyez le virement au serveur
-            swrite(sockfd, &virement, sizeof(virement));
+            nwrite(sockfd, &virement, sizeof(virement));
 
             //Récupérer le solde du compte
             int solde;
+            printf("Attente reponse serveur\n");
             sread(sockfd, &solde, sizeof(solde));
             printf("Votre solde actuel : %d\n", solde);
+
+            //Fermeture de la connexion
+            sclose(sockfd);
         }
         else if(commande[0] == '*') {
 
@@ -152,8 +156,6 @@ int main(int argc, char *argv[])
             printf("Erreur dans la commande\n");
         }
 
-        //Fermeture de la connexion
-        sclose(sockfd);
     }
 
     //Close du descripteur en lecture
