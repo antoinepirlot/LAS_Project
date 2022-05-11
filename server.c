@@ -45,7 +45,6 @@ int main(int argc, char **argv) {
 
         int nbVirementsRecurent;
         sread(newSockFd, &nbVirementsRecurent, sizeof(int));
-        nwrite(newSockFd, &nbVirementsRecurent, sizeof(int));
         //0 virement unique
         if (nbVirementsRecurent == 0 ) {
             printf("Virement unique\n");
