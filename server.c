@@ -41,8 +41,6 @@ int main(int argc, char **argv) {
     ssigprocmask(SIG_UNBLOCK, &set, NULL);
     while (!end) {
         int newSockFd = saccept(sockFd);
-        printf("Connexion acceptée\n");
-
         int nbVirementsRecurrents;
         sread(newSockFd, &nbVirementsRecurrents, sizeof(int));
         //0 virement unique
