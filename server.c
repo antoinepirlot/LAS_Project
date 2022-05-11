@@ -17,7 +17,7 @@ void endServer();
 
 void handleUniqueVirement(int newSockFd, int semId, int shmId);
 
-void handlerMultipleVirements(int newSockFd, int semId, int shmId, int nbVirementsRecurrents);
+void handleMultipleVirements(int newSockFd, int semId, int shmId, int nbVirementsRecurrents);
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
             printf("Virement unique effectué\n");
         } else {        //1 2 ... virement regulier et correspond  à length
             printf("Virements récurrents en cours de traitement...\n");
-            handlerMultipleVirements(newSockFd, semId, shmId, nbVirementsRecurrents);
+            handleMultipleVirements(newSockFd, semId, shmId, nbVirementsRecurrents);
             printf("Virements récurrents effectués\n");
         }
         sclose(newSockFd);
@@ -88,7 +88,7 @@ void handleUniqueVirement(int newSockFd, int semId, int shmId) {
     nwrite(newSockFd, &solde , sizeof(int));
 }
 
-void handlerMultipleVirements(int newSockFd, int semId, int shmId, int nbVirementsRecurrents) {
+void handleMultipleVirements(int newSockFd, int semId, int shmId, int nbVirementsRecurrents) {
     Virement *tabVirements = malloc(nbVirementsRecurrents * sizeof(Virement));
     checkNull(tabVirements, "Erreur lors du malloc de la table de virements");
     sread(newSockFd, tabVirements, sizeof(tabVirements));
