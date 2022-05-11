@@ -33,9 +33,8 @@ int main(int argc, char **argv) {
 
     shmId = sshmget(SHM_KEY, SHM_SIZE * sizeof(int), 0);
     semId = sem_get(SEM_KEY, 1);
-
-    ssigprocmask(SIG_UNBLOCK, &set, NULL);
     while (!end) {
+        ssigprocmask(SIG_BLOCK, &set, NULL);
         int newSockFd = saccept(sockFd);
         int nbVirementsRecurrents;
         sread(newSockFd, &nbVirementsRecurrents, sizeof(int));
@@ -48,6 +47,7 @@ int main(int argc, char **argv) {
             printf("Virements récurrents effectués\n");
         }
         sclose(newSockFd);
+        ssigprocmask(SIG_UNBLOCK, &set, NULL);
     }
     sclose(sockFd);
     printf("Fin du serveur.\n");
