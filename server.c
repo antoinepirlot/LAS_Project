@@ -56,7 +56,6 @@ int main(int argc, char **argv) {
             printf("Virements récurrents effectués\n");
         }
         sclose(newSockFd);
-        printf("Connexion fermée\n");
     }
     sclose(sockFd);
     printf("Fin du serveur.\n");
