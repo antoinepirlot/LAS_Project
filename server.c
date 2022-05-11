@@ -6,9 +6,6 @@
 #include "virement.h"
 #include "const.h"
 
-#define BACKLOG 5
-#define MAX_VIREMENTS 10
-
 volatile sig_atomic_t end = false;
 
 int initSocket(int port);

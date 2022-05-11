@@ -8,10 +8,7 @@
 
 #include "utils_v1.h"
 #include "virement.h"
-
-#define TAILLE_MAX_COMMANDE 15
-#define ENVOIE_OK -1
-#define MAX_NBR_VIREMENT 100
+#include "const.h"
 
 /* PRE : commande : Une chaine de caractère
  *
