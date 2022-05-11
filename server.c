@@ -45,11 +45,9 @@ int main(int argc, char **argv) {
         sread(newSockFd, &nbVirementsRecurrents, sizeof(int));
         //0 virement unique
         if (nbVirementsRecurrents == 0 ) {
-            printf("Virement unique en cours de traitement...\n");
             handleUniqueVirement(newSockFd, semId, shmId);
             printf("Virement unique effectué\n");
         } else {        //1 2 ... virement regulier et correspond  à length
-            printf("Virements récurrents en cours de traitement...\n");
             handleMultipleVirements(newSockFd, semId, shmId, nbVirementsRecurrents);
             printf("Virements récurrents effectués\n");
         }
