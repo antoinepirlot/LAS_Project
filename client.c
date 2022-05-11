@@ -13,7 +13,9 @@
 #define ENVOIE_OK -1
 #define MAX_NBR_VIREMENT 100
 
-//Récupérer les arguments de la commande et crée le virement
+/* PRE : commande : Une chaine de caractère
+ *
+ */
 Virement initVirement(char* commande, int num) {
 
     char** tabArguments = (char**)malloc(3*sizeof(char*));
@@ -84,7 +86,7 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
             nwrite(sockfd, &tabVirement, sizeof(tabVirement));
             sclose(sockfd);
         }
-        else {
+        else if(virement.compteReceveur != ENVOIE_OK) {
             tabVirement[nbrVirement] = virement;
             nbrVirement++;
         }
