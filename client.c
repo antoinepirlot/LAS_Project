@@ -10,9 +10,13 @@
 #include "virement.h"
 #include "const.h"
 
-/* PRE : commande : Une chaine de caractère
- *
- */
+volatile sig_atomic_t end = false;
+
+
+//PRE  : commande (commande envoyée dans le prompt de type "+/* n2 somme")
+//       num (numéro de compte de l'envoyeur)
+//POST : commande et num pas modifiés
+//RES  : Renvoie un virement
 Virement initVirement(char* commande, int num) {
 
     char** tabArguments = (char**)malloc(3*sizeof(char*));
@@ -29,7 +33,10 @@ Virement initVirement(char* commande, int num) {
     return virement;
 }
 
-//Crée le socket
+//PRE  : adr (chaine de caractère contenant l'adresse du serveur)
+//       port (entier contenant le port du serveur)
+//POST : adr et post pas modifiés
+//RES  : Crée la connexion avec le serveur et renvoie le sockfd
 int initSocketClient(char * adr, int port) {
     int sockfd = ssocket();
 
@@ -38,28 +45,46 @@ int initSocketClient(char * adr, int port) {
     return sockfd;
 }
 
+void sigusr1handler() {
+    end = true;
+}
 
-//Fils minuteur
-void minuteur (void *pipe, void *delay) {
+//PRE  : pipe (le pipe)
+//       delay (un entier contenant le temps entre chaque batement)
+//POST : pipe et delay pas modifiés
+//RES  : Envoie un signal au service de virement récurent
+//       pour lui indiquer d'envoyer les viremnets récurents
+void minuteur (void *pipe, void *delay, void *set) {
+
+    ssigaction(SIGUSR1, sigusr1handler);
+
+    ssigemptyset(set);
+    sigaddset(set, SIGUSR1);
+    ssigprocmask(SIG_UNBLOCK, set, NULL);
 
     int *pipefd = pipe;
     int *delayMinuteur = delay;
 
-    //Close du descripteur en lecture
+    //Fermeture du descripteur en lecture
     sclose(pipefd[0]);
 
     struct Virement virement = { ENVOIE_OK, ENVOIE_OK, ENVOIE_OK};
 
-    while(1) {
+    while(!end) {
         sleep(*delayMinuteur);
         swrite(pipefd[1], &virement, sizeof(virement));
     }
 
-    //Close du descripteur en lecture
+    //Fermeture du descripteur en écriture
     sclose(pipefd[1]);
 }
 
-//Fils virement recurent
+//PRE  : pipe (le pipe)
+//       adr (chaine de caractère contenant l'adresse du serveur)
+//       port (entier contenant le port du serveur)
+//       num (entier contenant le num de l'envoyeur)
+//POST : aucun paramètre n'est modifiés
+//RES  : Envoie un tableau de virements recurents à chaque signal envoyé par le minuteur
 void virement_recurent (void *pipe, void *adr, void *port, void *num) {
 
     int *pipefd = pipe;
@@ -73,7 +98,7 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
 
     int nbrVirement = 0;
 
-    while(1) {
+    while(!end) {
         sread(pipefd[0], &virement, sizeof(virement));
         if(virement.compteReceveur == ENVOIE_OK && nbrVirement > 0) {
 
@@ -87,13 +112,18 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
             nbrVirement++;
         }
     }
-
+    printf("Fermeture virement recurent\n");
     //Close du descripteur en lecture
     sclose(pipefd[0]);
 }
 
 int main(int argc, char *argv[])
 {
+    sigset_t set;
+    ssigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    ssigprocmask(SIG_BLOCK, &set, NULL);
+
     if(argc != 5) {
         printf("Respectez la synthaxe de la fonction : client adr port num delay\n");
         exit(0);
@@ -110,24 +140,28 @@ int main(int argc, char *argv[])
     spipe(pipefd);
 
     //Création des fils
-    int minuteur_pid = fork_and_run2(minuteur, pipefd, &delay);
+    int minuteur_pid = fork_and_run3(minuteur, pipefd, &delay, &set);
     int virement_recurent_pid = fork_and_run4(virement_recurent, pipefd, adr, &port, &num);
+
+    ssigemptyset(&set);
+    sigaddset(&set, SIGUSR1);
+    ssigprocmask(SIG_UNBLOCK, &set, NULL);
 
     //Cloture descripteur pour lecture
     sclose(pipefd[0]);
 
     //Prompt
     printf("Bienvenue dans le service de virement !\n");
-    bool fin = false;
 
-    while(!fin) {
+    while(!end) {
 
         char commande[TAILLE_MAX_COMMANDE];
         printf("Veuillez entrer une commande\n");
         sread(0, commande, TAILLE_MAX_COMMANDE);
 
         if(commande[0] == 'q') {
-            fin = true;
+            end = true;
+            skill(minuteur_pid, SIGUSR1);
         }
         else if(commande[0] == '+') {
             Virement virement = initVirement(commande, num);

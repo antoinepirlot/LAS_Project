@@ -82,8 +82,10 @@ void handleUniqueVirement(int newSockFd, int semId, int shmId) {
 void handleMultipleVirements(int newSockFd, int semId, int shmId, int nbVirementsRecurrents) {
     Virement tabVirements[MAX_NBR_VIREMENT];
     sread(newSockFd, tabVirements, sizeof(tabVirements));
+
     sem_down0(semId);
     int *accounts = sshmat(shmId);
+
     for (int i = 0; i < nbVirementsRecurrents; i++) {
         accounts[tabVirements[i].compteEnvoyeur] -= tabVirements[i].somme;
         accounts[tabVirements[i].compteReceveur] += tabVirements[i].somme;
