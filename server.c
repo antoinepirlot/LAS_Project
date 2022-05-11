@@ -85,7 +85,6 @@ void handleMultipleVirements(int newSockFd, int semId, int shmId, int nbVirement
     sem_down0(semId);
     int *accounts = sshmat(shmId);
     for (int i = 0; i < nbVirementsRecurrents; i++) {
-        printf("Virement de %d€ vers le compte %d depuis le compte %d\n", tabVirements[i].somme, tabVirements[i].compteReceveur, tabVirements[i].compteEnvoyeur);
         accounts[tabVirements[i].compteEnvoyeur] -= tabVirements[i].somme;
         accounts[tabVirements[i].compteReceveur] += tabVirements[i].somme;
     }
