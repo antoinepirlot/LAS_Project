@@ -10,7 +10,6 @@
 #define SEM_KEY 101
 #define PERM 0644
 #define BACKLOG 5
-#define MAX_VIREMENTS 10
 #define TAILLE_MAX_COMMANDE 15
 #define ENVOIE_OK -1
 #define MAX_NBR_VIREMENT 100
