@@ -15,9 +15,9 @@ int initSocket(int port);
 
 void endServer();
 
-void handleOneVirement(int *account);
+void handleUniqueVirement(int newSockFd, int semId, int shmId);
 
-void handlerMultipleVirements(int *accounts);
+void handlerMultipleVirements(int newSockFd, int semId, int shmId, int nbVirementsRecurrents);
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -43,29 +43,17 @@ int main(int argc, char **argv) {
         int newSockFd = saccept(sockFd);
         printf("Connexion acceptée\n");
 
-        int nbVirementsRecurent;
-        sread(newSockFd, &nbVirementsRecurent, sizeof(int));
-        nwrite(newSockFd, &nbVirementsRecurent, sizeof(int));
+        int nbVirementsRecurrents;
+        sread(newSockFd, &nbVirementsRecurrents, sizeof(int));
         //0 virement unique
-        if (nbVirementsRecurent == 0 ) {
-            printf("Virement unique\n");
-            Virement virement;
-            sread(newSockFd, &virement, sizeof(Virement));
-            sem_down0(semId);
-            int *accounts = sshmat(shmId);
-            accounts[virement.compteEnvoyeur] -= virement.somme;
-            accounts[virement.compteReceveur] +=virement.somme;
-            int solde = accounts[virement.compteEnvoyeur];
-            sshmdt(accounts);
-            sem_up0(semId);
-            nwrite(newSockFd, &solde , sizeof(int));
-            printf("Réponse envoyée au client\n");
+        if (nbVirementsRecurrents == 0 ) {
+            printf("Virement unique en cours de traitement...\n");
+            handleUniqueVirement(newSockFd, semId, shmId);
+            printf("Virement unique effectué\n");
         } else {        //1 2 ... virement regulier et correspond  à length
-            printf("Virement récurent\n");
-            Virement *tabVirements = malloc(nbVirementsRecurent * sizeof(Virement));
-            checkNull(tabVirements, "Erreur lors du malloc de la table de virements");
-            sread(newSockFd, tabVirements, sizeof(tabVirements));
-            nwrite(newSockFd, tabVirements, sizeof(tabVirements));
+            printf("Virements récurrents en cours de traitement...\n");
+            handlerMultipleVirements(newSockFd, semId, shmId, nbVirementsRecurrents);
+            printf("Virements récurrents effectués\n");
         }
         sclose(newSockFd);
         printf("Connexion fermée\n");
@@ -87,9 +75,29 @@ void endServer() {
     end = true;
 }
 
-void handleOneVirement(int *account) {
+void handleUniqueVirement(int newSockFd, int semId, int shmId) {
+    Virement virement;
+    sread(newSockFd, &virement, sizeof(Virement));
+    sem_down0(semId);
+    int *accounts = sshmat(shmId);
+    accounts[virement.compteEnvoyeur] -= virement.somme;
+    accounts[virement.compteReceveur] +=virement.somme;
+    int solde = accounts[virement.compteEnvoyeur];
+    sshmdt(accounts);
+    sem_up0(semId);
+    nwrite(newSockFd, &solde , sizeof(int));
 }
 
-void handlerMultipleVirements(int *accounts) {
-
+void handlerMultipleVirements(int newSockFd, int semId, int shmId, int nbVirementsRecurrents) {
+    Virement *tabVirements = malloc(nbVirementsRecurrents * sizeof(Virement));
+    checkNull(tabVirements, "Erreur lors du malloc de la table de virements");
+    sread(newSockFd, tabVirements, sizeof(tabVirements));
+    sem_down0(semId);
+    int *accounts = sshmat(shmId);
+    for (int i = 0; i < nbVirementsRecurrents; i++) {
+        accounts[tabVirements[i].compteEnvoyeur] -= tabVirements[i].somme;
+        accounts[tabVirements[i].compteReceveur] += tabVirements[i].somme;
+    }
+    sshmdt(accounts);
+    sem_up0(semId);
 }
