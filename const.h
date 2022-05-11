@@ -9,6 +9,7 @@
 #define SHM_SIZE 1000
 #define SEM_KEY 101
 #define PERM 0644
+
 #define BACKLOG 5
 #define TAILLE_MAX_COMMANDE 15
 #define ENVOIE_OK -1

@@ -27,7 +27,7 @@ int main(int argc, const char** argv) {
 		printf("Respectez la synthaxe de la fonction : maint type\n");
 		exit(0);
 	}
-	printf("Hello world! Ici le programme de maintenance. \n");
+	printf("Bienvenu sur le programme de maintenance. \n");
 	int type = atoi(argv[1]);
 	int opt;
 	if(argc==3){
@@ -36,7 +36,6 @@ int main(int argc, const char** argv) {
 		perror("Veuillez entrer une durée de maintenance et relancer le programme\n");
 		exit(-1);
 	}
-	printf("test break\n");
 	switch (type) {
 		case 1:
 			createResources();
@@ -71,7 +70,7 @@ void reserveResources(int opt){
 	int semid = sem_get(SEM_KEY,1);
 	sem_down0(semid);
 	sleep(opt);
-	printf("Je me réveil\n");
+	printf("Fin de la maintenance.\n");
 	sem_up0(semid);
 	exit(1);
 }
