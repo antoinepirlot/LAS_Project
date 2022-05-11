@@ -79,10 +79,9 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
         printf("Batement Récurent (Virement.compteReceveur = %d)\n", virement.compteReceveur);
         if(virement.compteReceveur == ENVOIE_OK && nbrVirement > 0) {
 
-            //ENVOYER -1
-
             int sockfd = initSocketClient(adr, *portServeur);
-            swrite(sockfd, &tabVirement, sizeof(tabVirement));
+            nwrite(sockfd, &nbrVirement, sizeof(int));
+            nwrite(sockfd, &tabVirement, sizeof(tabVirement));
             sclose(sockfd);
         }
         else {
@@ -139,12 +138,14 @@ int main(int argc, char *argv[])
             //Création du socket
             int sockfd = initSocketClient(adr, port);
 
+            int signal = 0;
+            nwrite(sockfd, &signal, sizeof(int));
+
             //Envoyez le virement au serveur
             nwrite(sockfd, &virement, sizeof(virement));
 
             //Récupérer le solde du compte
             int solde;
-            printf("Attente reponse serveur\n");
             sread(sockfd, &solde, sizeof(solde));
 
             //Fermeture de la connexion
