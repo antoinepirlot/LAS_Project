@@ -6,8 +6,20 @@
 #include "utils_v1.h"
 #include "const.h"
 
+/**
+ * Créer la mémoire partagée et un sémaphore.
+ * RES : La mémoire partagée ainsi qu'un sémaphore ont été créés.
+ */
 void createResources();
+/**
+ * Détruit la mémoire partagée et le sémaphore.
+ * RES : La mémoire partagée ainsi qu'un sémaphore ont été détruits.
+ */
 void deleteResources();
+/**
+ * Bloque la mémoire partagée durant une certaine durée.
+ *  PRE : @param opt : Durée durant laquelle la mémoire partagée sera bloquée.
+ */
 void reserveResources(int opt);
 
 int main(int argc, const char** argv) {
