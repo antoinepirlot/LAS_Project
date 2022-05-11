@@ -22,7 +22,6 @@ void handleMultipleVirements(int newSockFd, int semId, int shmId, int nbVirement
 int main(int argc, char **argv) {
     if (argc != 2) {
         printf("Respectez la synthaxe de la fonction : server port\n");
-
         exit(1);
     }
     sigset_t set;
