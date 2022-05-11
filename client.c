@@ -78,7 +78,6 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
 
     while(1) {
         sread(pipefd[0], &virement, sizeof(virement));
-        printf("Batement Récurent (Virement.compteReceveur = %d)\n", virement.compteReceveur);
         if(virement.compteReceveur == ENVOIE_OK && nbrVirement > 0) {
 
             int sockfd = initSocketClient(adr, *portServeur);
