@@ -15,6 +15,10 @@ int initSocket(int port);
 
 void endServer();
 
+void handleOneVirement(int *account);
+
+void handlerMultipleVirements(int *accounts);
+
 int main(int argc, char **argv) {
     if (argc != 2) {
         printf("Respectez la synthaxe de la fonction : server port\n");
@@ -31,8 +35,6 @@ int main(int argc, char **argv) {
     int port = atoi(argv[1]);
     int sockFd = initSocket(port);
 
-    Virement virement;
-
     shmId = sshmget(SHM_KEY, SHM_SIZE * sizeof(int), 0);
     semId = sem_get(SEM_KEY, 1);
 
@@ -40,21 +42,33 @@ int main(int argc, char **argv) {
     while (!end) {
         int newSockFd = saccept(sockFd);
         printf("Connexion acceptée\n");
-        int nbread = sread(newSockFd, &virement, sizeof(virement));
-        if (nbread == 0) {
-            printf("Nbread == 0\n");
+
+        int nbVirementsRecurent;
+        sread(newSockFd, &nbVirementsRecurent, sizeof(int));
+        nwrite(newSockFd, &nbVirementsRecurent, sizeof(int));
+        //0 virement unique
+        if (nbVirementsRecurent == 0 ) {
+            printf("Virement unique\n");
+            Virement virement;
+            sread(newSockFd, &virement, sizeof(Virement));
+            sem_down0(semId);
+            int *accounts = sshmat(shmId);
+            accounts[virement.compteEnvoyeur] -= virement.somme;
+            accounts[virement.compteReceveur] +=virement.somme;
+            int solde = accounts[virement.compteEnvoyeur];
+            sshmdt(accounts);
+            sem_up0(semId);
+            nwrite(newSockFd, &solde , sizeof(int));
+            printf("Réponse envoyée au client\n");
+        } else {        //1 2 ... virement regulier et correspond  à length
+            printf("Virement récurent\n");
+            Virement *tabVirements = malloc(nbVirementsRecurent * sizeof(Virement));
+            checkNull(tabVirements, "Erreur lors du malloc de la table de virements");
+            sread(newSockFd, tabVirements, sizeof(tabVirements));
+            nwrite(newSockFd, tabVirements, sizeof(tabVirements));
         }
-        printf("Virement reçu: %d, %d, %d\n", virement.compteEnvoyeur, virement.compteReceveur, virement.somme);
-        sem_down0(semId);
-        int *accounts = sshmat(shmId);
-        accounts[virement.compteEnvoyeur] = accounts[virement.compteEnvoyeur] - virement.somme;
-        accounts[virement.compteReceveur] = accounts[virement.compteReceveur] + virement.somme;
-        int solde = accounts[virement.compteEnvoyeur];
-        sshmdt(accounts);
-        sem_up0(semId);
-        nwrite(newSockFd, &solde , sizeof(int));
-        printf("Réponse envoyée au client\n");
         sclose(newSockFd);
+        printf("Connexion fermée\n");
     }
     sclose(sockFd);
     printf("Fin du serveur.\n");
@@ -71,4 +85,11 @@ int initSocket(int port) {
 
 void endServer() {
     end = true;
+}
+
+void handleOneVirement(int *account) {
+}
+
+void handlerMultipleVirements(int *accounts) {
+
 }
