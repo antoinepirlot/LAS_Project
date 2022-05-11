@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
         sread(newSockFd, &nbVirementsRecurent, sizeof(int));
         //0 virement unique
         if (nbVirementsRecurent == 0 ) {
-            printf("Virement unique\n");
+            printf("Virement unique en cours de traitement...\n");
             Virement virement;
             sread(newSockFd, &virement, sizeof(Virement));
             sem_down0(semId);
@@ -58,13 +58,21 @@ int main(int argc, char **argv) {
             sshmdt(accounts);
             sem_up0(semId);
             nwrite(newSockFd, &solde , sizeof(int));
-            printf("Réponse envoyée au client\n");
+            printf("Virement unique effectué\n");
         } else {        //1 2 ... virement regulier et correspond  à length
-            printf("Virement récurent\n");
+            printf("Virements récurrents en cours de traitement...\n");
             Virement *tabVirements = malloc(nbVirementsRecurent * sizeof(Virement));
             checkNull(tabVirements, "Erreur lors du malloc de la table de virements");
             sread(newSockFd, tabVirements, sizeof(tabVirements));
-            nwrite(newSockFd, tabVirements, sizeof(tabVirements));
+            sem_down0(semId);
+            int *accounts = sshmat(shmId);
+            for (int i = 0; i < nbVirementsRecurent; i++) {
+                accounts[tabVirements[i].compteEnvoyeur] -= tabVirements[i].somme;
+                accounts[tabVirements[i].compteReceveur] += tabVirements[i].somme;
+            }
+            sshmdt(accounts);
+            sem_up0(semId);
+            printf("Virements récurrents effectués");
         }
         sclose(newSockFd);
         printf("Connexion fermée\n");
