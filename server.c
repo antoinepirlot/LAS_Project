@@ -10,10 +10,28 @@ volatile sig_atomic_t end = false;
 
 int initSocket(int port);
 
+/**
+ * POST: Mets la variable volatile end à true afin de terminer le serveur
+ */
 void endServer();
 
+/**
+ * PRE: @param newSockFd correspond au file descriptor de la connection acceptée est supérieur à 0
+ *      @param semId correspond à l'id du sémaphore, est supérieur à 0
+ *      @param shmId correspond à l'id de la mémoire partagée est supérieur à 0
+ * POST: Récupère le virement reçu par le client et ajoute la somme au compte receveur
+ *       et diminue la somme au compte envoyeur
+ */
 void handleUniqueVirement(int newSockFd, int semId, int shmId);
 
+/**
+ * PRE: @param newSockFd correspond au file descriptor de la connexion avec le client
+ *      @param semId correspond à l'id du sémaphore, est supérieur à 0
+ *      @param shmId correspond à l'id de la mémoire partagée est supérieur à 0
+ *      @param nbVirementsRecurrents correspond au nombre de virements récurrents à traiter
+ *  POST: Récupère un tableau de virements et ajoute pour chaque virement la somme au compte receveur
+ *        et enleve la somme au compte envoyeur
+ */
 void handleMultipleVirements(int newSockFd, int semId, int shmId, int nbVirementsRecurrents);
 
 int main(int argc, char **argv) {
@@ -42,7 +60,7 @@ int main(int argc, char **argv) {
         if (nbVirementsRecurrents == 0 ) {
             handleUniqueVirement(newSockFd, semId, shmId);
             printf("Virement unique effectué\n");
-        } else {        //1 2 ... virement regulier et correspond  à length
+        } else { //1 2 ... virement regulier et correspond  à length
             handleMultipleVirements(newSockFd, semId, shmId, nbVirementsRecurrents);
             printf("Virements récurrents effectués\n");
         }
