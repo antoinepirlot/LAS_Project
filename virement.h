@@ -5,6 +5,6 @@ typedef struct Virement {
     int compteEnvoyeur;
     int compteReceveur;
     int somme;
-}Virement;
+} Virement;
 
 #endif
