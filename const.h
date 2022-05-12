@@ -13,6 +13,8 @@
 #define BACKLOG 5
 #define TAILLE_MAX_COMMANDE 15
 #define ENVOIE_OK -1
+#define FIN_PROGRAMME -2
 #define MAX_NBR_VIREMENT 100
+
 
 #endif //SOURCES_CONST_H
