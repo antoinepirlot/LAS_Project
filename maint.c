@@ -36,7 +36,7 @@ int main(int argc, const char **argv) {
         opt = atoi(argv[2]);
     } else if (argc < 3 && type == 3) {
         perror("Veuillez entrer une durée de maintenance et relancer le programme\n");
-        exit(-1);
+        exit(1);
     }
     switch (type) {
         case 1:
