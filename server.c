@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 #include "utils_v1.h"
 #include "virement.h"
@@ -50,9 +52,13 @@ int main(int argc, char **argv) {
     int shmId = sshmget(SHM_KEY, SHM_SIZE * sizeof(int), 0);
     int semId = sem_get(SEM_KEY, 1);
 
+    ssigprocmask(SIG_UNBLOCK, &set, NULL);
     while (!end) {
+        int newSockFd = accept(sockFd, NULL, NULL);
+        if (newSockFd < 0) {
+            break;
+        }
         ssigprocmask(SIG_BLOCK, &set, NULL);
-        int newSockFd = saccept(sockFd);
         int nbVirementsRecurrents;
         sread(newSockFd, &nbVirementsRecurrents, sizeof(int));
         if (nbVirementsRecurrents == 0 ) {
