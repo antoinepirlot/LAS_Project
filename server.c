@@ -45,22 +45,22 @@ int main(int argc, char **argv) {
     ssigprocmask(SIG_BLOCK, &set, NULL);
     ssigaction(SIGINT, endServer);
 
-    int semId, shmId;
     int port = atoi(argv[1]);
     int sockFd = initSocket(port);
+    int shmId = sshmget(SHM_KEY, SHM_SIZE * sizeof(int), 0);
+    int semId = sem_get(SEM_KEY, 1);
 
-    shmId = sshmget(SHM_KEY, SHM_SIZE * sizeof(int), 0);
-    semId = sem_get(SEM_KEY, 1);
     while (!end) {
         ssigprocmask(SIG_BLOCK, &set, NULL);
         int newSockFd = saccept(sockFd);
         int nbVirementsRecurrents;
         sread(newSockFd, &nbVirementsRecurrents, sizeof(int));
-        //0 virement unique
         if (nbVirementsRecurrents == 0 ) {
+            //0 virement unique
             handleUniqueVirement(newSockFd, semId, shmId);
             printf("Virement unique effectué\n");
-        } else { //1 2 ... virement regulier et correspond  à length
+        } else {
+            //1 2 ... virements récurrents et correspond  à length
             handleMultipleVirements(newSockFd, semId, shmId, nbVirementsRecurrents);
             printf("Virements récurrents effectués\n");
         }
@@ -70,6 +70,7 @@ int main(int argc, char **argv) {
     sclose(sockFd);
     printf("Fin du serveur.\n");
     exit(0);
+    //FIN DU SERVEUR
 }
 
 int initSocket(int port) {
