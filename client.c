@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/ipc.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -72,6 +70,8 @@ void minuteur (void *pipe, void *delay, void *set) {
 
     while(!end) {
         sleep(*delayMinuteur);
+
+        //Envoie du battement au service de virement récurent
         swrite(pipefd[1], &virement, sizeof(virement));
     }
 
@@ -99,20 +99,33 @@ void virement_recurent (void *pipe, void *adr, void *port, void *num) {
     int nbrVirement = 0;
 
     while(!end) {
+
         sread(pipefd[0], &virement, sizeof(virement));
+
         if(virement.compteReceveur == ENVOIE_OK && nbrVirement > 0) {
 
             int sockfd = initSocketClient(adr, *portServeur);
+
+            //Envoie du nombre de virement au serveur qui signal l'envoie prochain d'une table de virement
             nwrite(sockfd, &nbrVirement, sizeof(int));
+
+            //Envoie d'un tableau de virement
             nwrite(sockfd, &tabVirement, sizeof(tabVirement));
+
             sclose(sockfd);
         }
-        else if(virement.compteReceveur != ENVOIE_OK) {
+        else if(virement.compteReceveur == FIN_PROGRAMME) {
+            end = true;
+        }
+        else if(virement.compteReceveur != ENVOIE_OK && virement.compteReceveur != FIN_PROGRAMME) {
+
+            //Ajout du virement dans la table de virement
             tabVirement[nbrVirement] = virement;
             nbrVirement++;
         }
     }
     printf("Fermeture virement recurent\n");
+
     //Close du descripteur en lecture
     sclose(pipefd[0]);
 }
@@ -141,7 +154,7 @@ int main(int argc, char *argv[])
 
     //Création des fils
     int minuteur_pid = fork_and_run3(minuteur, pipefd, &delay, &set);
-    int virement_recurent_pid = fork_and_run4(virement_recurent, pipefd, adr, &port, &num);
+    fork_and_run4(virement_recurent, pipefd, adr, &port, &num);
 
     ssigemptyset(&set);
     sigaddset(&set, SIGUSR1);
@@ -160,16 +173,22 @@ int main(int argc, char *argv[])
         sread(0, commande, TAILLE_MAX_COMMANDE);
 
         if(commande[0] == 'q') {
+
+            //Fermeture des programmes
             end = true;
             skill(minuteur_pid, SIGUSR1);
+            struct Virement virementFin = { FIN_PROGRAMME, FIN_PROGRAMME, FIN_PROGRAMME};
+            swrite(pipefd[1], &virementFin, sizeof(virementFin));
         }
         else if(commande[0] == '+') {
+
+            //Création du virement
             Virement virement = initVirement(commande, num);
-            printf("Contenu virement: Somme=%d, Envoyeur=%d, Receveur=%d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
 
             //Création du socket
             int sockfd = initSocketClient(adr, port);
 
+            //Envoie un 0 pour signaler un virement simple
             int signal = 0;
             nwrite(sockfd, &signal, sizeof(int));
 
@@ -183,13 +202,15 @@ int main(int argc, char *argv[])
             //Fermeture de la connexion
             sclose(sockfd);
 
+            //Affichage du solde
             printf("Votre solde actuel : %d\n", solde);
         }
         else if(commande[0] == '*') {
 
+            //Création du virement
             Virement virement = initVirement(commande, num);
-            printf("Contenu virement: %d, %d, %d\n", virement.somme, virement.compteEnvoyeur, virement.compteReceveur);
 
+            //Envoie du virement dans le service de virement récurent
             swrite(pipefd[1], &virement, sizeof(virement));
 
             printf("Envoyé dans les virements récurents\n");
